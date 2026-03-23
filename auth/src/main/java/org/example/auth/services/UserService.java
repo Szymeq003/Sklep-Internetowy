@@ -40,5 +40,6 @@ public class UserService {
             }else{
                 user.setRole(Role.USER);
             }
+            saveUser(user);
         }
     }
