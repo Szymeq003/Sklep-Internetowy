@@ -32,7 +32,6 @@ public class User implements UserDetails {
     public User(){
         generateUuid();
     }
-
     public User(long id, String uuid, String login, String email, String password, Role role, boolean isLock, boolean isEnabled) {
         this.id = id;
         this.uuid = uuid;
@@ -43,6 +42,9 @@ public class User implements UserDetails {
         this.isLock = isLock;
         this.isEnabled = isEnabled;
         generateUuid();
+    }
+    public Role getRole(){
+        return this.role;
     }
     private long getId(){
         return id;
