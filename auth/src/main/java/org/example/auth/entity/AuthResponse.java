@@ -2,6 +2,7 @@ package org.example.auth.entity;
 
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.sql.Timestamp;
 @Getter
