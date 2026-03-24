@@ -63,6 +63,12 @@ public class UserService {
     }
 
     public void register(UserRegisterDTO userRegisterDTO) throws UserExistingWithName,UserExistingWithMail{
+        userRepository.findUserByLogin(userRegisterDTO.getLogin()).ifPresent(value->{
+            throw new UserExistingWithName("Użytkownik o nazwie juz istnieje");
+        });
+        userRepository.findUserByEmail(userRegisterDTO.getEmail()).ifPresent(value->{
+            throw new UserExistingWithMail("Użytkownik o mailu juz istnieje");
+        });
         User user = new User();
         user.setLogin(userRegisterDTO.getLogin());
         user.setPassword(userRegisterDTO.getPassword());
