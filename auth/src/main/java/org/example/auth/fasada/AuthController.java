@@ -1,9 +1,5 @@
 package org.example.auth.fasada;
 
-import org.example.auth.entity.AuthResponse;
-import org.example.auth.entity.Code;
-import org.example.auth.entity.User;
-import org.example.auth.entity.UserRegisterDTO;
 import org.example.auth.entity.*;
 import org.example.auth.services.UserService;
 import io.jsonwebtoken.ExpiredJwtException;
