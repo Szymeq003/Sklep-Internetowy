@@ -1,5 +1,6 @@
 package org.example.auth.entity;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.constraints.Email;
 import lombok.Builder;
 import lombok.Getter;
@@ -14,6 +15,7 @@ public class UserRegisterDTO {
     private String login;
     @Email
     private String email;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @Length(min = 8,max = 75, message = "Hasło powinno skałdać się od 8 do 75 znaków")
     private String password;
     private Role role;
