@@ -1,6 +1,7 @@
 package org.example.auth.services;
 
 import org.example.auth.entity.*;
+import org.example.auth.exceptions.UserDontExistException;
 import org.example.auth.exceptions.UserExistingWithMail;
 import org.example.auth.exceptions.UserExistingWithName;
 import org.example.auth.repository.UserRepository;
@@ -16,6 +17,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
 import java.util.Arrays;
 
 @Service
@@ -33,13 +35,15 @@ public class UserService {
     @Value("${jwt.refresh.exp}")
     private int refreshExp;
 
-    private User saveUser(User user){
-            user.setPassword(passwordEncoder.encode(user.getPassword()));
-            return  userRepository.saveAndFlush(user);
-        }
-        private String generateToken(String username,int exp) {
-            return jwtService.generateToken(username,exp);
-        }
+
+    private User saveUser(User user) {
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        return userRepository.saveAndFlush(user);
+    }
+
+    private String generateToken(String username,int exp) {
+        return jwtService.generateToken(username,exp);
+    }
 
     public void validateToken(HttpServletRequest request,HttpServletResponse response) throws ExpiredJwtException, IllegalArgumentException{
         String token = null;
@@ -66,7 +70,6 @@ public class UserService {
         }
 
     }
-
     public void register(UserRegisterDTO userRegisterDTO) throws UserExistingWithName,UserExistingWithMail{
         userRepository.findUserByLogin(userRegisterDTO.getLogin()).ifPresent(value->{
             throw new UserExistingWithName("Użytkownik o nazwie juz istnieje");
@@ -80,6 +83,7 @@ public class UserService {
         user.setPassword(userRegisterDTO.getPassword());
         user.setEmail(userRegisterDTO.getEmail());
         user.setRole(Role.USER);
+
         saveUser(user);
         emailService.sendActivation(user);
     }
@@ -106,6 +110,9 @@ public class UserService {
         }
         return ResponseEntity.ok(new AuthResponse(Code.A2));
     }
+
+
+
     public void setAsAdmin(UserRegisterDTO user) {
         userRepository.findUserByLogin(user.getLogin()).ifPresent(value->{
             value.setRole(Role.ADMIN);
@@ -113,4 +120,13 @@ public class UserService {
         });
     }
 
+    public void activateUser(String uid) throws UserDontExistException{
+        User user = userRepository.findUserByUuid(uid).orElse(null);
+        if (user != null){
+            user.setLock(false);
+            userRepository.save(user);
+            return;
+        }
+        throw new UserDontExistException("User dont exist");
+    }
 }

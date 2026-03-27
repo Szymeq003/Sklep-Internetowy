@@ -1,6 +1,7 @@
 package org.example.auth.fasada;
 
 import org.example.auth.entity.*;
+import org.example.auth.exceptions.UserDontExistException;
 import org.example.auth.exceptions.UserExistingWithMail;
 import org.example.auth.exceptions.UserExistingWithName;
 import org.example.auth.services.UserService;
@@ -48,6 +49,17 @@ public class AuthController{
             return ResponseEntity.status(401).body(new AuthResponse(Code.A3));
         }
     }
+
+    @RequestMapping(path = "/activate",method = RequestMethod.GET)
+    public ResponseEntity<AuthResponse> activateUser(@RequestParam String uid){
+        try{
+            userService.activateUser(uid);
+            return ResponseEntity.ok(new AuthResponse(Code.SUCCESS));
+        }catch (UserDontExistException e){
+            return ResponseEntity.status(400).body(new AuthResponse(Code.A6));
+        }
+    }
+
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentNotValidException.class)
