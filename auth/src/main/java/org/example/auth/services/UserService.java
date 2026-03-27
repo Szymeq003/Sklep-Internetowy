@@ -26,6 +26,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final EmailService emailService;
     private final CookiService cookiService;
     @Value("${jwt.exp}")
     private int exp;
@@ -74,11 +75,13 @@ public class UserService {
             throw new UserExistingWithMail("Użytkownik o mailu juz istnieje");
         });
         User user = new User();
+        user.setLock(true);
         user.setLogin(userRegisterDTO.getLogin());
         user.setPassword(userRegisterDTO.getPassword());
         user.setEmail(userRegisterDTO.getEmail());
         user.setRole(Role.USER);
         saveUser(user);
+        emailService.sendActivation(user);
     }
 
     public ResponseEntity<?> login(HttpServletResponse response, User authRequest) {

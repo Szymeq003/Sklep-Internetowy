@@ -22,7 +22,7 @@ public class EmailService {
     private String fontendUrl;
 
     @Value("classpath:static/mail-aktywuj.html")
-    Resource activeTemplate;
+    private Resource activeTemplate;
 
     public void sendActivation(User user){
         try{
