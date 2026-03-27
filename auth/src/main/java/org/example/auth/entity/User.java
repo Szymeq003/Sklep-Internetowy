@@ -1,7 +1,9 @@
 package org.example.auth.entity;
 
 import jakarta.persistence.*;
-import lombok.NoArgsConstructor;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -21,6 +23,7 @@ public class User implements UserDetails {
     private String uuid;
     private String login;
     private String email;
+
     private String password;
     @Enumerated(EnumType.STRING)
     private Role role;
@@ -45,6 +48,9 @@ public class User implements UserDetails {
     }
     public Role getRole(){
         return this.role;
+    }
+    public String getUuid(){
+        return this.uuid;
     }
     private long getId(){
         return id;
