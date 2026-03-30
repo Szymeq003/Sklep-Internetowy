@@ -59,14 +59,25 @@ public class AuthController{
     }
 
     @RequestMapping(path = "/reset-password",method = RequestMethod.POST)
-    public ResponseEntity<AuthResponse> sendMailRecovery(@RequestParam String uid){
+    public ResponseEntity<AuthResponse> sendMailRecovery(@RequestBody ResetPasswordData resetPasswordData){
         try{
-            userService.recoveryPassword(uid);
+            userService.recoveryPassword(resetPasswordData.getEmail());
             return ResponseEntity.ok(new AuthResponse(Code.SUCCESS));
         }catch (UserDontExistException e){
             return ResponseEntity.status(400).body(new AuthResponse(Code.A6));
         }
     }
+
+    @RequestMapping(path = "/reset-password",method = RequestMethod.PATCH)
+    public ResponseEntity<AuthResponse> recoveryMail(@RequestBody ChangePasswordData changePasswordData){
+        try{
+            userService.restPassword(changePasswordData);
+            return ResponseEntity.ok(new AuthResponse(Code.SUCCESS));
+        }catch (UserDontExistException e){
+            return ResponseEntity.status(400).body(new AuthResponse(Code.A6));
+        }
+    }
+
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentNotValidException.class)

@@ -1,6 +1,5 @@
 package org.example.gatway.config;
 
-
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import org.springframework.stereotype.Service;
@@ -16,17 +15,15 @@ public class Carousel {
 
     public Carousel(EurekaClient eurekaClient){
         this.eurekaClient = eurekaClient;
-        initAuthCarousel();
+        try{
+            initAuthCarousel();
+        }catch (NullPointerException e){
+            e.printStackTrace();
+        }
         events();
     }
 
     public String getUriAuth(){
-        if (instances.isEmpty()) {
-            initAuthCarousel();
-            if (instances.isEmpty()) {
-                throw new IllegalStateException("Brak połączonych instancji AUTH-SERVICE w Eureka!");
-            }
-        }
         StringBuilder stringBuilder = new StringBuilder();
         InstanceInfo instance = instances.get(currentIndex);
         stringBuilder.append(instance.getIPAddr()).append(":").append(instance.getPort());
@@ -43,16 +40,15 @@ public class Carousel {
             initAuthCarousel();
         });
         eurekaClient.unregisterEventListener(eurekaEvent -> {
-            initAuthCarousel();
+            try{
+                initAuthCarousel();
+            }catch (NullPointerException e){
+                e.printStackTrace();
+            }
         });
     }
 
-    private void initAuthCarousel() {
-        com.netflix.discovery.shared.Application app = eurekaClient.getApplication("AUTH-SERVICE");
-        if (app != null) {
-            instances = app.getInstances();
-        } else {
-            instances = new ArrayList<>();
-        }
+    private void initAuthCarousel() throws NullPointerException {
+        instances = eurekaClient.getApplication("AUTH-SERVICE").getInstances();
     }
 }

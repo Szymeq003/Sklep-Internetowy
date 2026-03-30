@@ -90,7 +90,7 @@ public class UserService {
     }
 
     public ResponseEntity<?> login(HttpServletResponse response, User authRequest) {
-        User user = userRepository.findUserByLoginAndLockFalseAndEnabledIsTrue(authRequest.getUsername()).orElse(null);
+        User user = userRepository.findUserByLoginAndLockAndEnabled(authRequest.getUsername()).orElse(null);
         if (user != null) {
             Authentication authenticate = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
             if (authenticate.isAuthenticated()) {
@@ -112,8 +112,6 @@ public class UserService {
         return ResponseEntity.ok(new AuthResponse(Code.A2));
     }
 
-
-
     public void setAsAdmin(UserRegisterDTO user) {
         userRepository.findUserByLogin(user.getLogin()).ifPresent(value->{
             value.setRole(Role.ADMIN);
@@ -132,10 +130,20 @@ public class UserService {
         throw new UserDontExistException("User dont exist");
     }
 
-    public void recoveryPassword(String uid) throws UserDontExistException{
-        User user = userRepository.findUserByUuid(uid).orElse(null);
+    public void recoveryPassword(String email) throws UserDontExistException{
+        User user = userRepository.findUserByEmail(email).orElse(null);
         if (user != null){
             emailService.sendPasswordRecovery(user);
+            return;
+        }
+        throw new UserDontExistException("User dont exist");
+    }
+
+    public void restPassword(ChangePasswordData changePasswordData) throws UserDontExistException{
+        User user = userRepository.findUserByUuid(changePasswordData.getUid()).orElse(null);
+        if (user != null){
+            user.setPassword(changePasswordData.getPassword());
+            saveUser(user);
             return;
         }
         throw new UserDontExistException("User dont exist");
