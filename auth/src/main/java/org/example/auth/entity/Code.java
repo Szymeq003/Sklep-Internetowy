@@ -1,7 +1,7 @@
 package org.example.auth.entity;
 
 public enum Code {
-    SUCCESS("Operacja zakończona sukcesen"),
+    SUCCESS("Operacja zakończona sukcesem"),
     PERMIT("Przyznano dostep"),
     A1("Podany uzytkownik o danej nazwie nie istnieje lub nie aktywował konta"),
     A2("Podane dane są nieprawidłowe"),

@@ -1,17 +1,19 @@
 package org.example.auth.entity;
 
-import lombok.Getter;
+import lombok.*;
 
 import java.sql.Timestamp;
+
 @Getter
-public class AuthResponse {
+@Setter
+public class LoginResponse {
     private final String timestamp;
-    private final String message;
+    private final boolean message;
     private final Code code;
 
-    public AuthResponse(Code code) {
+    public LoginResponse(boolean message){
         this.timestamp = String.valueOf(new Timestamp(System.currentTimeMillis()));
-        this.message = code.label;
-        this.code = code;
+        this.message = message;
+        this.code = Code.SUCCESS;
     }
 }

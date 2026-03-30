@@ -2,7 +2,6 @@ package org.example.auth.services;
 
 
 import jakarta.servlet.http.Cookie;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -18,7 +17,8 @@ public class CookiService {
     public Cookie removeCookie(Cookie[] cookies, String name){
         for (Cookie cookie:cookies){
             if (cookie.getName().equals(name)){
-                cookie.setMaxAge(1);
+                cookie.setMaxAge(0);
+                cookie.setHttpOnly(true);
                 return cookie;
             }
         }

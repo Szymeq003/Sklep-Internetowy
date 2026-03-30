@@ -43,7 +43,7 @@ public class JwtService {
                 .setExpiration(new Date(System.currentTimeMillis()+exp))
                 .signWith(getSignKey(), SignatureAlgorithm.HS256).compact();
     }
-    private String getSubject(final String token){
+    public String getSubject(final String token){
         return Jwts
                 .parser()
                 .setSigningKey(SECRET)
