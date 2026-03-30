@@ -34,14 +34,13 @@ public class AuthController{
         }
     }
 
-
     @RequestMapping(path = "/login",method = RequestMethod.POST)
     public ResponseEntity<?> login(@RequestBody User user, HttpServletResponse response){
         return userService.login(response,user);
     }
 
     @RequestMapping(path = "/validate",method = RequestMethod.GET)
-    public ResponseEntity<AuthResponse> validateToken(HttpServletRequest request,HttpServletResponse response){
+    public ResponseEntity<AuthResponse> validateToken(HttpServletRequest request,HttpServletResponse response) {
         try{
             userService.validateToken(request,response);
             return ResponseEntity.ok(new AuthResponse(Code.PERMIT));
@@ -49,7 +48,6 @@ public class AuthController{
             return ResponseEntity.status(401).body(new AuthResponse(Code.A3));
         }
     }
-
     @RequestMapping(path = "/activate",method = RequestMethod.GET)
     public ResponseEntity<AuthResponse> activateUser(@RequestParam String uid){
         try{
@@ -60,6 +58,15 @@ public class AuthController{
         }
     }
 
+    @RequestMapping(path = "/reset-password",method = RequestMethod.POST)
+    public ResponseEntity<AuthResponse> sendMailRecovery(@RequestParam String uid){
+        try{
+            userService.recoveryPassword(uid);
+            return ResponseEntity.ok(new AuthResponse(Code.SUCCESS));
+        }catch (UserDontExistException e){
+            return ResponseEntity.status(400).body(new AuthResponse(Code.A6));
+        }
+    }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentNotValidException.class)

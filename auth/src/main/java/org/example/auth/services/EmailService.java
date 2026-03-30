@@ -23,6 +23,8 @@ public class EmailService {
 
     @Value("classpath:static/mail-aktywuj.html")
     private Resource activeTemplate;
+    @Value("classpath:static/resetuj-haslo.html")
+    private Resource recoveryTemplate;
 
     public void sendActivation(User user){
         try{
@@ -33,5 +35,14 @@ public class EmailService {
             throw new RuntimeException(e);
         }
     }
-}
 
+    public void sendPasswordRecovery(User user){
+        try{
+            String html = Files.toString(recoveryTemplate.getFile(), Charsets.UTF_8);
+            html = html.replace("https://google.com",fontendUrl+"/odzyskaj-haslo/"+user.getUuid());
+            emailConfiguration.sendMail(user.getEmail(), html,"Odzyskanie hasła",true);
+        }catch (IOException e){
+            throw new RuntimeException(e);
+        }
+    }
+}

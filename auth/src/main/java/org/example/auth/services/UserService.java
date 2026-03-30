@@ -79,6 +79,7 @@ public class UserService {
         });
         User user = new User();
         user.setLock(true);
+        user.setEnabled(false);
         user.setLogin(userRegisterDTO.getLogin());
         user.setPassword(userRegisterDTO.getPassword());
         user.setEmail(userRegisterDTO.getEmail());
@@ -89,7 +90,7 @@ public class UserService {
     }
 
     public ResponseEntity<?> login(HttpServletResponse response, User authRequest) {
-        User user = userRepository.findUserByLogin(authRequest.getUsername()).orElse(null);
+        User user = userRepository.findUserByLoginAndLockFalseAndEnabledIsTrue(authRequest.getUsername()).orElse(null);
         if (user != null) {
             Authentication authenticate = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
             if (authenticate.isAuthenticated()) {
@@ -124,7 +125,17 @@ public class UserService {
         User user = userRepository.findUserByUuid(uid).orElse(null);
         if (user != null){
             user.setLock(false);
+            user.setEnabled(true);
             userRepository.save(user);
+            return;
+        }
+        throw new UserDontExistException("User dont exist");
+    }
+
+    public void recoveryPassword(String uid) throws UserDontExistException{
+        User user = userRepository.findUserByUuid(uid).orElse(null);
+        if (user != null){
+            emailService.sendPasswordRecovery(user);
             return;
         }
         throw new UserDontExistException("User dont exist");
