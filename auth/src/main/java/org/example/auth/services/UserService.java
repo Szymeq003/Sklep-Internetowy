@@ -52,6 +52,7 @@ public class UserService {
     }
 
     public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response){
+        log.info("Delete all cookies");
         Cookie cookie = cookiService.removeCookie(request.getCookies(),"Authorization");
         if (cookie != null){
             response.addCookie(cookie);
@@ -75,6 +76,7 @@ public class UserService {
                 }
             }
         }else {
+            log.info("Can't login beacose in token is empty");
             throw new IllegalArgumentException("Token can't be null");
         }
         try {
@@ -117,8 +119,10 @@ public class UserService {
                                 .role(user.getRole())
                                 .build());
             }
+            log.info("Can't login user don't exist");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new AuthResponse(Code.A1));
         }catch (ExpiredJwtException|IllegalArgumentException e){
+            log.info("Can't login token is expired or null");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new AuthResponse(Code.A3));
         }
     }
@@ -155,7 +159,6 @@ public class UserService {
                 Cookie cookie = cookiService.generateCookie("Authorization", generateToken(authRequest.getUsername(),exp), exp);
                 response.addCookie(cookie);
                 response.addCookie(refresh);
-                log.info("--START LoginService");
                 return ResponseEntity.ok(
                         UserRegisterDTO
                                 .builder()
@@ -190,7 +193,6 @@ public class UserService {
             userRepository.save(user);
             return;
         }
-        log.info("User dont exist");
         throw new UserDontExistException("User dont exist");
     }
 
@@ -201,7 +203,6 @@ public class UserService {
             emailService.sendPasswordRecovery(user,resetOperations.getUid());
             return;
         }
-        log.info("User dont exist");
         throw new UserDontExistException("User dont exist");
     }
 
@@ -217,7 +218,6 @@ public class UserService {
                 return;
             }
         }
-        log.info("User dont exist");
         throw new UserDontExistException("User dont exist");
     }
 }

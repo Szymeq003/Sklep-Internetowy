@@ -42,21 +42,25 @@ public class AuthController{
 
     @RequestMapping(path = "/login",method = RequestMethod.POST)
     public ResponseEntity<?> login(@RequestBody User user, HttpServletResponse response){
+        log.info("--TRY LOGIN USER");
         return userService.login(response,user);
     }
 
     @RequestMapping(path = "/auto-login",method = RequestMethod.GET)
     public ResponseEntity<?> autoLogin(HttpServletResponse response,HttpServletRequest request){
+        log.info("--TRY AUTO-LOGIN USER");
         return userService.loginByToken(request,response);
     }
 
     @RequestMapping(path = "/logged-in",method = RequestMethod.GET)
     public ResponseEntity<?> loggedIn(HttpServletResponse response,HttpServletRequest request){
+        log.info("--CHECK USER LOGGED-IN");
         return userService.loggedIn(request,response);
     }
 
     @RequestMapping(path = "/logout",method = RequestMethod.GET)
     public ResponseEntity<?> logout( HttpServletResponse response,HttpServletRequest request){
+        log.info("--TRY LOGOUT USER");
         return userService.logout(request, response);
     }
 
