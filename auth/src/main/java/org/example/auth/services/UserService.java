@@ -1,16 +1,17 @@
 package org.example.auth.services;
 
-import lombok.extern.slf4j.Slf4j;
 import org.example.auth.entity.*;
 import org.example.auth.exceptions.UserDontExistException;
 import org.example.auth.exceptions.UserExistingWithMail;
 import org.example.auth.exceptions.UserExistingWithName;
+import org.example.auth.repository.ResetOperationsRepository;
 import org.example.auth.repository.UserRepository;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,6 +30,8 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ResetOperationService resetOperationService;
+    private final ResetOperationsRepository resetOperationsRepository;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final EmailService emailService;
@@ -50,11 +53,11 @@ public class UserService {
 
     public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response){
         Cookie cookie = cookiService.removeCookie(request.getCookies(),"Authorization");
-        if (cookie != null) {
+        if (cookie != null){
             response.addCookie(cookie);
         }
         cookie = cookiService.removeCookie(request.getCookies(),"refresh");
-        if (cookie != null) {
+        if (cookie != null){
             response.addCookie(cookie);
         }
         return  ResponseEntity.ok(new AuthResponse(Code.SUCCESS));
@@ -83,6 +86,7 @@ public class UserService {
             response.addCookie(cookie);
             response.addCookie(refreshCokkie);
         }
+
     }
 
     public ResponseEntity<LoginResponse> loggedIn(HttpServletRequest request, HttpServletResponse response){
@@ -118,6 +122,7 @@ public class UserService {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new AuthResponse(Code.A3));
         }
     }
+
 
     public void register(UserRegisterDTO userRegisterDTO) throws UserExistingWithName,UserExistingWithMail{
         userRepository.findUserByLogin(userRegisterDTO.getLogin()).ifPresent(value->{
@@ -192,7 +197,8 @@ public class UserService {
     public void recoveryPassword(String email) throws UserDontExistException{
         User user = userRepository.findUserByEmail(email).orElse(null);
         if (user != null){
-            emailService.sendPasswordRecovery(user);
+            ResetOperations resetOperations = resetOperationService.initResetOperation(user);
+            emailService.sendPasswordRecovery(user,resetOperations.getUid());
             return;
         }
         log.info("User dont exist");
@@ -200,11 +206,16 @@ public class UserService {
     }
 
     public void restPassword(ChangePasswordData changePasswordData) throws UserDontExistException{
-        User user = userRepository.findUserByUuid(changePasswordData.getUid()).orElse(null);
-        if (user != null){
-            user.setPassword(changePasswordData.getPassword());
-            saveUser(user);
-            return;
+        ResetOperations resetOperations = resetOperationsRepository.findByUid(changePasswordData.getUid()).orElse(null);
+        if (resetOperations != null){
+            User user = userRepository.findUserByUuid(resetOperations.getUser().getUuid()).orElse(null);
+
+            if (user != null){
+                user.setPassword(changePasswordData.getPassword());
+                saveUser(user);
+                resetOperationService.endOperation(resetOperations.getUid());
+                return;
+            }
         }
         log.info("User dont exist");
         throw new UserDontExistException("User dont exist");

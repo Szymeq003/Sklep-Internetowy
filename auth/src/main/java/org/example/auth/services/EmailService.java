@@ -41,11 +41,11 @@ public class EmailService {
         log.info("--STOP sendActivation");
     }
 
-    public void sendPasswordRecovery(User user){
+    public void sendPasswordRecovery(User user,String uid){
         try{
             log.info("--START sendPasswordRecovery");
             String html = Files.toString(recoveryTemplate.getFile(), Charsets.UTF_8);
-            html = html.replace("https://google.com",fontendUrl+"/odzyskaj-haslo/"+user.getUuid());
+            html = html.replace("https://google.com",fontendUrl+"/odzyskaj-haslo/"+uid);
             emailConfiguration.sendMail(user.getEmail(), html,"Odzyskanie hasła",true);
         }catch (IOException e){
             log.info("Cant send mail");
