@@ -1,5 +1,6 @@
 package org.example.auth.services;
 
+import lombok.extern.slf4j.Slf4j;
 import org.example.auth.entity.*;
 import org.example.auth.exceptions.UserDontExistException;
 import org.example.auth.exceptions.UserExistingWithMail;
@@ -22,6 +23,7 @@ import java.util.Arrays;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserService {
 
     private final UserRepository userRepository;
@@ -43,6 +45,14 @@ public class UserService {
 
     private String generateToken(String username,int exp) {
         return jwtService.generateToken(username,exp);
+    }
+
+    public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response){
+        Cookie cookie = cookiService.removeCookie(request.getCookies(),"Authorization");
+        response.addCookie(cookie);
+        cookie = cookiService.removeCookie(request.getCookies(),"refresh");
+        response.addCookie(cookie);
+        return  ResponseEntity.ok(new AuthResponse(Code.SUCCESS));
     }
 
     public void validateToken(HttpServletRequest request,HttpServletResponse response) throws ExpiredJwtException, IllegalArgumentException{
@@ -72,10 +82,12 @@ public class UserService {
     }
     public void register(UserRegisterDTO userRegisterDTO) throws UserExistingWithName,UserExistingWithMail{
         userRepository.findUserByLogin(userRegisterDTO.getLogin()).ifPresent(value->{
-            throw new UserExistingWithName("Użytkownik o nazwie juz istnieje");
+            log.info("Users alredy exist with this name");
+            throw new UserExistingWithName("Users alredy exist with this name");
         });
         userRepository.findUserByEmail(userRegisterDTO.getEmail()).ifPresent(value->{
-            throw new UserExistingWithMail("Użytkownik o mailu juz istnieje");
+            log.info("Users alredy exist with this mail");
+            throw new UserExistingWithMail("Users alredy exist with this mail");
         });
         User user = new User();
         user.setLock(true);
@@ -90,6 +102,7 @@ public class UserService {
     }
 
     public ResponseEntity<?> login(HttpServletResponse response, User authRequest) {
+        log.info("--START LoginService");
         User user = userRepository.findUserByLoginAndLockAndEnabled(authRequest.getUsername()).orElse(null);
         if (user != null) {
             Authentication authenticate = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
@@ -98,6 +111,7 @@ public class UserService {
                 Cookie cookie = cookiService.generateCookie("Authorization", generateToken(authRequest.getUsername(),exp), exp);
                 response.addCookie(cookie);
                 response.addCookie(refresh);
+                log.info("--START LoginService");
                 return ResponseEntity.ok(
                         UserRegisterDTO
                                 .builder()
@@ -106,11 +120,16 @@ public class UserService {
                                 .role(user.getRole())
                                 .build());
             } else {
+                log.info("--START LoginService");
                 return ResponseEntity.ok(new AuthResponse(Code.A1));
             }
         }
+        log.info("User dont exist");
+        log.info("--START LoginService");
         return ResponseEntity.ok(new AuthResponse(Code.A2));
     }
+
+
 
     public void setAsAdmin(UserRegisterDTO user) {
         userRepository.findUserByLogin(user.getLogin()).ifPresent(value->{
@@ -127,6 +146,7 @@ public class UserService {
             userRepository.save(user);
             return;
         }
+        log.info("User dont exist");
         throw new UserDontExistException("User dont exist");
     }
 
@@ -136,6 +156,7 @@ public class UserService {
             emailService.sendPasswordRecovery(user);
             return;
         }
+        log.info("User dont exist");
         throw new UserDontExistException("User dont exist");
     }
 
@@ -146,6 +167,7 @@ public class UserService {
             saveUser(user);
             return;
         }
+        log.info("User dont exist");
         throw new UserDontExistException("User dont exist");
     }
 }

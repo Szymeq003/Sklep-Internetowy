@@ -14,4 +14,14 @@ public class CookiService {
         cookie.setMaxAge(exp);
         return cookie;
     }
+
+    public Cookie removeCookie(Cookie[] cookies, String name){
+        for (Cookie cookie:cookies){
+            if (cookie.getName().equals(name)){
+                cookie.setMaxAge(1);
+                return cookie;
+            }
+        }
+        return null;
+    }
 }

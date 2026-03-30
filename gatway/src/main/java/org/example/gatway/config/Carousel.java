@@ -20,7 +20,7 @@ public class Carousel {
         try{
             initAuthCarousel();
         }catch (NullPointerException e){
-            e.printStackTrace();
+            log.warn("Cant find active instances of Auth Service");
         }
         events();
     }

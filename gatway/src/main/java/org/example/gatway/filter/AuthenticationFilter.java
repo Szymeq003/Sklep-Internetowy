@@ -59,9 +59,10 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
 
                 HttpCookie authCookie = exchange.getRequest().getCookies().get(HttpHeaders.AUTHORIZATION).get(0);
                 HttpCookie refreshCookie = exchange.getRequest().getCookies().get("refresh").get(0);
+                log.info("--START validate Token");
                 try {
                     if (activeProfile.equals("test")){
-                        log.info("Init self auth methods (only for thests)");
+                        log.debug("Init self auth methods (only for tests)");
                         jwtUtil.validateToken(authCookie.getValue());
                     }else{
                         String cookies = new StringBuilder()
@@ -76,6 +77,7 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
                         HttpHeaders httpHeaders = new HttpHeaders();
                         httpHeaders.add("Cookie",cookies);
                         HttpEntity<Object> entity = new HttpEntity<>(httpHeaders);
+
                         ResponseEntity<String> response = template.exchange("http://"+carousel.getUriAuth()+"/api/v1/auth/validate", HttpMethod.GET,entity, String.class);
 
                         if (response.getStatusCode() == HttpStatus.OK){
@@ -93,12 +95,15 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
                                                     .build());
                                 }
                             }
+                            log.info("Successful login");
                         }
                     }
                 } catch (Exception e) {
+                    log.warn("Cannt login bad token");
                     exchange.getResponse().writeWith(Flux.just(new DefaultDataBufferFactory().wrap(e.getMessage().getBytes())));
                 }
             }
+            log.info("--STOP validate Token");
             log.info("--STOP GatewayFilter");
             return chain.filter(exchange);
         });
